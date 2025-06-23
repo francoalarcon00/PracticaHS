@@ -48,3 +48,31 @@ Los posibles trabajos son :
     las dos primeras opiniones y el resto las descarta.
     - mantenimientoBásico que consiste en ajustar la tornillería de 8 tornillos y hacer un engrase con 10 gramos de grasa. 
 -}
+type Tornillo = Int
+type Grasa = Int
+
+
+ajusteDeTornilleria :: Tornillo -> Atraccion -> Atraccion
+ajusteDeTornilleria tornillo atraccion = atraccion {
+    duracion = min 10 (duracion atraccion + tornillo),
+    reparaciones = init (reparaciones atraccion),
+    mantenimiento = not (null (reparaciones atraccion) || length (reparaciones atraccion) == 1)
+}
+
+engrase :: Grasa -> Atraccion -> Atraccion
+engrase grasa atraccion = atraccion {
+    alturaMinima = alturaMinima atraccion + grasa `div` 10,
+    opiniones = "para valientes" : take 2 (opiniones atraccion),
+    reparaciones = init (reparaciones atraccion),
+    mantenimiento = not (null (reparaciones atraccion) || length (reparaciones atraccion) == 1)
+}
+
+mantenimientoElectrico :: Atraccion -> Atraccion
+mantenimientoElectrico atraccion = atraccion {
+    opiniones = take 2 (opiniones atraccion),
+    reparaciones = init (reparaciones atraccion),
+    mantenimiento = not (null (reparaciones atraccion) || length (reparaciones atraccion) == 1)
+}
+
+mantenimientoBasico :: Atraccion -> Atraccion
+mantenimientoBasico atraccion = engrase 10 (ajusteDeTornilleria 8 atraccion)
