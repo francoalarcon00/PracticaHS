@@ -76,3 +76,60 @@ mantenimientoElectrico atraccion = atraccion {
 
 mantenimientoBasico :: Atraccion -> Atraccion
 mantenimientoBasico atraccion = engrase 10 (ajusteDeTornilleria 8 atraccion)
+
+{-
+Esa me da miedito
+Queremos saber si una atracción meDaMiedito, esto implica que alguna de las inspecciones que se le hicieron 
+le asignó más de 4 días de mantenimiento.
+-}
+
+meDaMiedito :: Atraccion -> Bool
+meDaMiedito atraccion = any ((> 4) . duracionDias) (reparaciones atraccion)
+
+{-
+Acá cerramos… 
+Cerramos una atracción si la sumatoria de tiempo de las reparaciones pendientes
+para dicha atracción es de 7 días.
+-}
+
+cerrarAtraccion :: Atraccion -> Bool
+cerrarAtraccion atraccion = sum (map duracionDias (reparaciones atraccion)) >= 7
+
+{-
+Disney no esistis
+Tenemos que determinar disneyNoEsistis para un parque. 
+Esto ocurre cuando todas las atracciones de nombre cheto (con más de 5 letras) 
+no tienen reparaciones pendientes.
+-}
+
+disneyNoEsistis :: [Atraccion] -> Bool
+disneyNoEsistis = all (null . reparaciones) . filter ((>5) . length . nombre)
+
+{-
+Una atracción tiene reparaciones peolas si luego de cada una está más buena, 
+esto implica que luego de hacer el trabajo de cada reparación el puntaje mejora 
+con respecto a la reparación previa.
+-}
+
+-- SIN TERMINAR
+
+-- Función principal: arranca con la lista de reparaciones y el scoring inicial
+tieneReparacionesPeolas :: Atraccion -> Bool
+tieneReparacionesPeolas atr =
+  auxPeolas (reparaciones atr) atr (scoring atr)
+
+-- Caso base: si ya no quedan reparaciones, todo fue ascendente
+auxPeolas :: [Reparacion] -> Atraccion -> Int -> Bool
+auxPeolas [] _ _ = True
+
+-- Caso recursivo: tomamos la reparación r y el resto rs
+auxPeolas :: [Reparacion] -> Atraccion -> Int -> Bool
+auxPeolas [] _ _ = True
+auxPeolas (r:rs) atrPrev puntajePrev
+                | scoring (aplicarTrabajo r atrPrev) > puntajePrev = 
+                    auxPeolas rs
+                    (aplicarTrabajo r atrPrev)
+                    (scoring (aplicarTrabajo r atrPrev))
+                | otherwise =
+                    False
+
