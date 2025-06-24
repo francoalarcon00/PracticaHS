@@ -133,3 +133,20 @@ auxPeolas (r:rs) atrPrev puntajePrev
                 | otherwise =
                     False
 
+f :: Atraccion -> Atraccion
+
+-- | Aplica en secuencia todos los trabajos pendientes a una atracción
+realizarTrabajos :: [Atraccion -> Atraccion]  -- lista de funciones-trabajo
+                 -> Atraccion                 -- atracción inicial
+                 -> Atraccion                 -- atracción final
+realizarTrabajos trabajos atr0 =
+  foldl (\atr f -> f atr) atr0 trabajos
+
+trabajosPunto2 :: [Atraccion -> Atraccion]
+trabajosPunto2 =
+  [ ajusteDeTornilleria 8     -- fijas 8 tornillos
+  , engrase 10                -- fijas 10 gramos de grasa
+  , mantenimientoElectrico
+  , mantenimientoBasico
+  ]
+
