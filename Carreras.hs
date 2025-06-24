@@ -5,8 +5,7 @@ data Auto = Auto{
 }deriving (Show, Eq)
 
 data Carrera = Carrera{
-    autos :: [Auto],
-    estado :: Bool
+    autos :: [Auto]
 }
 
 {-
