@@ -149,3 +149,102 @@ esDesestresante turista excursion = deltaExcursionSegun stress turista excursion
 
 excursionesDesestresantes :: Turista -> [Excursion] -> [Excursion]
 excursionesDesestresantes turista = filter (esDesestresante turista)
+
+
+{-
+
+Para mantener a los turistas ocupados todo el día, la empresa vende paquetes de excursiones llamados tours.
+ Un tour se compone por una serie de excursiones.
+    Completo: Comienza con una caminata de 20 minutos para apreciar una "cascada", luego se camina 40 minutos hasta una playa, 
+    y finaliza con una salida con gente local que habla "melmacquiano".
+-}
+
+type Tour = [Excursion] --definimos tour para mas simpllcidad de codigo
+
+completo :: Tour
+completo = [apreciarPaisaje "cascada" . caminar 20, irALaPlaya . caminar 40, hablarIdioma "melmacquiano"] --podria escribirse al revez en cada caso para tener una mejor coherencia a al hora de leer el codigo
+
+{-
+Lado B: Este tour consiste en ir al otro lado de la isla a hacer alguna excursión (de las existentes) que elija el turista. 
+    Primero se hace un paseo en barco por aguas tranquilas (cercanas a la costa) hasta la otra punta de la isla, 
+    luego realiza la excursión elegida 
+    y finalmente vuelve caminando hasta la otra punta, tardando 2 horas.
+-}
+
+ladoB :: Excursion -> Tour -- dada una excursion elegida, me arma un toour donde la excursion elegida es la 2da en la lista
+ladoB excursionElegida = [paseoEnBarco Tranquila, excursionElegida, caminar 120]
+
+{-
+Isla Vecina: Se navega hacia una isla vecina para hacer una excursión. 
+Esta excursión depende de cómo esté la marea al llegar a la otra isla: 
+    si está fuerte se aprecia un "lago", sino se va a una playa.
+
+En resumen, este tour implica hacer un paseo en barco hasta la isla vecina, 
+luego llevar a cabo dicha excursión, 
+y finalmente volver a hacer un paseo en barco de regreso. La marea es la misma en todo el camino.
+
+-}
+
+excursionDeterminada :: Marea -> Excursion -- dada una marea determinada, me devuelve una excursion
+excursionDeterminada Fuerte = apreciarPaisaje "lago"
+excursionDeterminada _ = irALaPlaya
+
+islaVecina :: Marea -> Tour
+islaVecina marea = [paseoEnBarco marea, excursionDeterminada marea, paseoEnBarco marea]
+
+
+{-
+Modelar los tours para:
+- Hacer que un turista haga un tour. 
+    Esto implica, primero un aumento del stress en tantas unidades como cantidad de excursiones tenga el tour, y luego realizar las excursiones en orden.
+-}
+
+hacerTour :: Turista -> Tour -> Turista
+hacerTour turista tour = foldl (flip hacerExcursion) (turista{stress = stress turista + length tour}) tour
+
+{-
+Dado un conjunto de tours, saber si existe alguno que sea convincente para un turista. 
+Esto significa que el tour tiene alguna excursión desestresante la cual, además, deja al turista acompañado luego de realizarla.
+-}
+
+esConvincente :: Turista -> [Tour] -> Bool
+esConvincente turista = any 
+                            ( any (\exc -> esDesestresante turista exc && not (viajaSolo (hacerExcursion exc turista ))))
+
+
+{-
+Saber la efectividad de un tour para un conjunto de turistas. 
+Esto se calcula como la sumatoria de la espiritualidad recibida de cada turista a quienes les resultó convincente el tour. 
+La espiritualidad que recibe un turista es la suma de las pérdidas de stress y cansancio tras el tour.
+-}
+
+efectividadTour :: Tour -> [Turista] -> Int
+efectividadTour tour =
+  sum 
+  . map (\t -> stress t - stress (hacerTour t tour) + cansancio t - cansancio (hacerTour t tour) )
+  . filter (\t -> esConvincente t [tour])
+
+
+{-
+Implementar y contestar en modo de comentarios o pruebas por consola
+Construir un tour donde se visiten infinitas playas.
+ 1- ¿Se puede saber si ese tour es convincente para Ana? ¿Y con Beto? Justificar.
+ - ¿Existe algún caso donde se pueda conocer la efectividad de este tour? Justificar.
+-}
+
+infinitasPlayas :: Tour
+infinitasPlayas = repeat irALaPlaya
+
+{-
+
+1)  ¿El tour es convincente para Ana?
+> esConvincente ana [playasInf]
+True  
+
+> esConvincente beto [playasInf]
+Nunca termina
+
+2) ¿Existe algún caso donde se pueda conocer la efectividad de este tour? Justificar.
+Solo se puede conocer cuando no tengamos ningun turista, si tenemos al menos un turista, nunca termina de recorrer las excursiones
+
+-}
